@@ -1,0 +1,4 @@
+numpy
+pydantic
+flake8
+mypy
