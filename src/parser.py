@@ -17,12 +17,12 @@ class Parser():
             raise ValueError(f"invalid json file '{file_name}'"
                              f": {e} ")
 
-    def load_functions_definition(self,
+    def parsing_functions_definition(self,
                                   json: str) -> List[Function_definition]:
 
         return [Function_definition(**i) for i in json]
 
-    def load_prompts(self, prompts: str) -> List[Prompt]:
+    def parsing_prompts(self, prompts: str) -> List[Prompt]:
 
         return [Prompt(**i) for i in prompts]
 
@@ -42,4 +42,7 @@ class Parser():
         if not loading_functions:
             raise ValueError("no definition functions provided !")
 
-        return (loading_prompts, loading_functions)
+        functions = self.parsing_functions_definition(loading_functions)
+        prompts = self.parsing_prompts(loading_prompts)
+
+        return (prompts, functions)
