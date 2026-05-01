@@ -29,8 +29,13 @@ class Function_definition(BaseModel):
             raise ValueError("empty function name")
         if not self.description:
             raise ValueError("empty desctionption")
+
         for i in self.parameters.values():
             if len(tuple(i.items())) != 1 or \
                     tuple(i.items())[0][0] != "type":
                 raise ValueError("the only acceptable parametter key is 'type'")
+
+        if len(tuple(self.returns.items())) != 1 or \
+                tuple(self.returns.items())[0][0] != "type":
+            raise ValueError("the only acceptable returns key is 'type'")
         return self
