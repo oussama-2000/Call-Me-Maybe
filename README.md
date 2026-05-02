@@ -24,3 +24,7 @@ https://www.youtube.com/shorts/KHEtJUlpqcg
 
 https://jdmeier.com/how-llms-work/
 
+cd ~/goinfre/Call-Me-Maybe
+export XDG_CACHE_HOME=$PWD/.cache
+export TMPDIR=$PWD/.tmp
+uv add dependencies

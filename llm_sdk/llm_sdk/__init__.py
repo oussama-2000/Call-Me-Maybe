@@ -1,13 +1,9 @@
 # ABOUTME: LLM SDK for local model inference using Hugging Face transformers.
 # ABOUTME: Provides Small_LLM_Model class for loading and running causal language models.
 
-import time
-from typing import Tuple
-
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedTokenizer, PreTrainedModel, logging
 from huggingface_hub import hf_hub_download
-import os
 
 
 logging.set_verbosity_error()  # keep the console clean
@@ -86,7 +82,8 @@ class Small_LLM_Model:
 
     def get_logits_from_input_ids(self, input_ids: list[int]) -> list[float]:
         """
-        Given a list of input token ids, return the raw logits (no softmax) for the next token.
+        Given a list of input token ids, return the raw logits (no softmax)
+        for the next token.
         """
         input_tensor = torch.tensor([input_ids], device=self._device, dtype=torch.long)
         with torch.no_grad():
@@ -95,24 +92,23 @@ class Small_LLM_Model:
         logits = out.logits[0, -1].tolist()
         return [float(x) for x in logits]
 
-
     def get_path_to_vocab_file(self) -> str:
-        vocab_file_name = self._tokenizer.vocab_files_names.get('vocab_file', "vocab.json")
+        vocab_file_name = self._tokenizer.vocab_files_names.get('vocab_file',
+                                                                "vocab.json")
         vocab_path = hf_hub_download(
             repo_id=self._model_name,
             filename=vocab_file_name
         )
         return vocab_path
 
-
     def get_path_to_merges_file(self) -> str:
-        merges_file_name = self._tokenizer.vocab_files_names.get('merges_file', "merges.txt")
+        merges_file_name = self._tokenizer.vocab_files_names.get('merges_file',
+                                                                 "merges.txt")
         merges_path = hf_hub_download(
             repo_id=self._model_name,
             filename=merges_file_name
         )
         return merges_path
-
 
     def get_path_to_tokenizer_file(self) -> str:
         tokenizer_file_name = self._tokenizer.vocab_files_names.get('tokenizer_file', "tokenizer.json")
@@ -121,3 +117,8 @@ class Small_LLM_Model:
             filename=tokenizer_file_name
         )
         return tokenizer_path
+
+
+#  torch : open-source machine learning framework used for deep learning and scientific computing
+#  transformers : used 
+#  tensor is a mathematical object that generate scalars, vecores and matrices
