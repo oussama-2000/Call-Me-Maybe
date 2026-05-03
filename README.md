@@ -21,6 +21,8 @@ while not finished:
 https://www.youtube.com/watch?v=NKnZYvZA7w4
 https://www.youtube.com/watch?v=AMdG7IjgSPM&t=1173s
 https://www.youtube.com/shorts/KHEtJUlpqcg
+transformers :   https://youtu.be/ZXiruGOCn9s?si=9nLs4wAPtLDusXF1
+torch tutorial:  https://youtu.be/r1bquDz5GGA?si=rvwFW9dY5vU1AlE9 
 
 https://jdmeier.com/how-llms-work/
 

@@ -48,7 +48,7 @@ class Small_LLM_Model:
             dtype = torch.float16 if self._device in ["cuda", "mps"] else torch.float32
         self._dtype = dtype
 
-        # --- load tokenizer & model -------------------------------------------------
+        # --- load tokenizer & model -----------------------------------------
         self._tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(
             model_name, trust_remote_code=trust_remote_code
         )
@@ -62,7 +62,9 @@ class Small_LLM_Model:
             device_map="auto" if self._device == "cuda" else None,
             trust_remote_code=trust_remote_code,
         )
+        # move model to (cpu, gpu or mps)
         self._model.to(self._device)
+        # Turns off training behavior like dropout
         self._model.eval()
 
         # switch to inference-only mode
@@ -111,6 +113,7 @@ class Small_LLM_Model:
         return merges_path
 
     def get_path_to_tokenizer_file(self) -> str:
+
         tokenizer_file_name = self._tokenizer.vocab_files_names.get('tokenizer_file', "tokenizer.json")
         tokenizer_path = hf_hub_download(
             repo_id=self._model_name,
@@ -119,6 +122,10 @@ class Small_LLM_Model:
         return tokenizer_path
 
 
-#  torch : open-source machine learning framework used for deep learning and scientific computing
-#  transformers : used 
-#  tensor is a mathematical object that generate scalars, vecores and matrices
+"""
+  torch : open-source machine learning framework used for deep learning and scientific computing
+  transformers : used 
+
+  logits: is a raw of scores for every foken in vocabulary
+  example: blue = 8.2 ,  green = 1.1
+"""
