@@ -124,7 +124,6 @@ class Small_LLM_Model:
 
 """
   torch : open-source machine learning framework used for deep learning and scientific computing
-  transformers : used 
 
   logits: is a raw of scores for every foken in vocabulary
   example: blue = 8.2 ,  green = 1.1
