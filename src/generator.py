@@ -52,37 +52,62 @@ def is_json_complete(text: str) -> bool:
     return opened > 0 and opened == closed
 
 
-def extract_json(output):
-    output = output[::-1]
-    i = 0
-    end = 0
-    for c in output:
-        if i == 4:
-            break
-        if c in "{}":
-            i += 1
+def allowed_tokens(state):
+    tokens = {
+        "start": '{',
+        "cot": '"',
+        "name": "name",
+        "dots": '":',
+        "space": ' '
+        
+    }
+    return tokens[state]
 
-        end += 1
-    json = output[:end]
-    return json[::-1]
-
+def update_state(state):
+    next_state = {
+        "start": "cot",
+        "cot": "name",
+        "name": "dots",
+        "dots": "space"
+    }
+    return next_state[state]
 
 def generate(llm, prompt, max_tokens=100):
     input_ids = llm.encode(prompt)[0].tolist()
-
+    result = []
+    state = "start"
+    fn = llm.encode("fn")
+    check = False
+    fns = None
+    
     for _ in range(max_tokens):
         logits = llm.get_logits_from_input_ids(input_ids)
 
+        filtered = np.full_like(logits, float("-inf"))
+        token = llm.encode(allowed_tokens(state))
+        
+        # filtered[token] = logits[token]
+        # filtered[allowed_strings] = logits[allowed_strings]
+        
+        
         next_token = logits.index(max(logits))
+        if next_token == fn:
+            check = True
+        # print(llm.decode(next_token))
         input_ids.append(next_token)
+        result.append(next_token)
+        print(llm.decode(result))
         text = llm.decode(input_ids)
+
         if is_json_complete(text):
             break
-    result = llm.decode(input_ids)
 
-    return result
+        if state != "space":
+            state = update_state(state)
+        
+    return llm.decode(result)
 
 
 prompt = build_prompt("what is the sum of 2 and 1?")
 output = generate(llm, prompt)
-print(extract_json(output))
+print(output)

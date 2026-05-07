@@ -17,7 +17,7 @@ class Prompt(BaseModel):
 class Function_definition(BaseModel):
     name: str = Field(min_length=8)
     description: str = Field(min_length=6)
-    parameters: Dict[str, Dict[str, str]] = Field(min_length=1)
+    parameters: Dict[str, Dict] = Field(min_length=1)
     returns: Dict[str, str]
 
     @model_validator(mode='after')
