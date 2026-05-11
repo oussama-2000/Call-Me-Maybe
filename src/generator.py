@@ -1,9 +1,9 @@
 """LLM + decoding"""
+import numpy as np
 
 from llm_sdk.llm_sdk import Small_LLM_Model
 
 llm = Small_LLM_Model()
-
 
 def build_prompt(user_prompt):
     return f"""
@@ -76,9 +76,6 @@ def generate(llm, prompt, max_tokens=100):
     input_ids = llm.encode(prompt)[0].tolist()
     result = []
     state = "start"
-    fn = llm.encode("fn")
-    check = False
-    fns = None
     
     for _ in range(max_tokens):
         logits = llm.get_logits_from_input_ids(input_ids)
@@ -110,4 +107,3 @@ def generate(llm, prompt, max_tokens=100):
 
 prompt = build_prompt("what is the sum of 2 and 1?")
 output = generate(llm, prompt)
-print(output)

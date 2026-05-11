@@ -1,6 +1,6 @@
 import json
 from json import JSONDecodeError
-from models import Prompt, Function_definition
+from .models import Prompt, Function_definition
 from typing import List
 
 

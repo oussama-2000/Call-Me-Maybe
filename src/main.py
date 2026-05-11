@@ -1,5 +1,6 @@
-from parser import Parser
+from .parser import Parser
 from pydantic import ValidationError
+from .gen import build_prompt, generate
 
 
 if __name__ == "__main__":
@@ -12,7 +13,10 @@ if __name__ == "__main__":
             "prompts": prompts,
             "functions": functions
         }
-        print(data)
+
+        for prompt in prompts:
+            p = build_prompt(prompt.prompt)
+            print(generate(p))
 
     except ValidationError as e:
         print(f"Error: {e.errors()[0]['msg']}")
