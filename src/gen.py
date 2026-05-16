@@ -5,132 +5,81 @@ from llm_sdk.llm_sdk import Small_LLM_Model
 llm = Small_LLM_Model()
 
 
+def build_functions(input):
+    functions = {fn.name: list(fn.parameters.keys())
+                    for fn in input
+                }
+    functions['fn_unknown'] = None
+    return functions
 
-FUNCTIONS = {
-    "fn_add_numbers": ["a", "b"],
-    "fn_greet": ["name"],
-    "fn_reverse_string": ["s"],
-    "fn_get_square_root": ["a"],
-    "fn_substitute_string_with_regex": [
-        "source_string",
-        "regex",
-        "replacement"
-    ]
-}
-
-def build_prompt(user_prompt):
-
+def build_prompt(user_prompt, functions):
     return f"""
     You convert user requests into function calls.
     
-    Return ONLY valid JSON. Do not explain. Do not repeat the prompt.
+    RETURN ONLY VALID MINIFIED JSON.
     
     Format:
     {{
-    "prompt": string,
-    "name": enum["fn_add_numbers", "fn_greet", "fn_reverse_string", "fn_get_square_root", "fn_substitute_string_with_regex"],
-    "parameters": object
+      "prompt": user prompt
+      "name": string enum{list(functions.keys())},
+      "parameters": object
     }}
     
-    Examples:
+    FUNCTIONS:
+    {functions}
     
-    User: What is the sum of 2 and 3?
-    Output:
-    {{"prompt": prompt, "name": "fn_add_numbers", "parameters": {{"a": 2, "b": 3}}}}
-    
-    User: Greet shrek
-    Output:
-    {{"prompt": prompt", "name": "fn_greet", "parameters": {{"name": "shrek"}}}}
-    
-    User: Reverse the string 'hello'
-    Output:
-    {{"prompt": prompt, "name": "fn_reverse_string", "parameters": {{"s": "hello"}}}}
-    
-    User: What is the square root of 16?
-    Output:
-    {{"prompt": prompt, "name": "fn_get_square_root", "parameters": {{"a": 16}}}}
-    
-    User: Replace all digits in 'abc123' with '#'
-    Output:
-    {{"prompt": prompt, "name": "fn_substitute_string_with_regex", "parameters": {{"source_string": "abc123", "regex": "\\\\d", "replacement": "#"}}}}
+    YOU MUST RESPECT PARAMETERS TYPE.
     
     Task:
-    User: {user_prompt}
-    Output:
+    User prompt: {user_prompt}
+    JSON:
     """
 
 
-def is_valid_prefix(text: str) -> bool:
-    """
-    Checks whether the generated text can STILL become valid.
-
-    This is PREFIX validation,
-    not full JSON validation.
-    """
-
-    # Must start with {
-    if not text.strip().startswith("{"):
+def is_valid_prefix(text: str, functions) -> bool:
+    
+    if text.count("}") > text.count("{"):
         return False
+    
 
-    # Quick structural checks
-    if text.count("{") < text.count("}"):
-        return False
+    if '"name":' in text:
 
-    if text.count('"') % 2 == 1:
-        # inside unfinished string -> still valid
-        pass
+        name_parts = text.split('"name"')[1]
+        fn_part = name_parts.split(":")[1]
+        if fn_part.count('"') < 2:
+            fn_part = fn_part.replace('"', "")
+            fn_part = fn_part.replace(',', "")
+            fn_part = fn_part.strip()
+            fn_validation = any(
+                fn.startswith(fn_part)
+                for fn in functions
+            )
 
-    # Reject invalid function names early
-    if '"name"' in text:
-        try:
-            partial = text.split('"name"')[1]
-    
-            if ":" in partial:
-                value_part = partial.split(":", 1)[1].strip()
-    
-                if value_part.startswith('"'):
-    
-                    current = value_part[1:]
-    
-                    is_closed = '"' in current
-    
-                    current = current.split('"')[0]
-    
-                    valid_prefix = any(
-                        fn.startswith(current)
-                        for fn in FUNCTIONS
-                    )
-    
-                    valid_complete = current in FUNCTIONS
-    
-                    if is_closed:
-                        if not valid_complete:
-                            return False
-                    else:
-                        if not valid_prefix:
-                            return False
-    
-        except Exception:
-            return False
+            return fn_validation
+
+    if '"parameters": {"' in text:
+        par_parts = text.split('"parameters": {"')[1]
+        par_parts = par_parts.replace('"', "")
+        par_parts = par_parts.replace('}', "")
+        values = par_parts.split(",")
+        for value in values:
+            if ":" in value:
+                key = value.split(":")[0].strip()
+                par_validation = any(
+                    key in v for v in functions.values()
+                )
+                return par_validation
 
     return True
 
-
 def is_json_complete(text: str) -> bool:
     try:
+
+        text = text.replace("\\d", "\\\\d")
+        text = text.replace("\\s", "\\\\s")
         obj = json.loads(text)
-    
-        # basic schema validation
+
         if not isinstance(obj, dict):
-            return False
-    
-        required = ["prompt", "name", "parameters"]
-    
-        for k in required:
-            if k not in obj:
-                return False
-    
-        if obj["name"] not in FUNCTIONS:
             return False
     
         return True
@@ -140,55 +89,62 @@ def is_json_complete(text: str) -> bool:
 
 
 
-def generate(prompt, max_tokens=110, top_k=20):
+def generate(prompt, user_prompt, functions):
 
-    input_ids = llm.encode(prompt)[0].tolist()
+    input_ids = list(llm.encode(prompt)[0])
     result = []
+    prefix = json.dumps({
+        "prompt": user_prompt,
+        "name": ""
+    })[:-3]
+    prefix_ids = list(llm.encode(prefix)[0])
+    input_ids += prefix_ids
+    result = prefix_ids.copy()
 
-    for _ in range(max_tokens):
+    for _ in range(100):
 
         logits = llm.get_logits_from_input_ids(input_ids)
 
         logits = np.array(logits)
 
-        # get top-k candidates
-        top_candidates = np.argsort(logits)[-top_k:]
+        top_logits = np.argsort(logits)[-5:]
 
         selected_token = None
 
-        # try best candidates first
-        for candidate in reversed(top_candidates):
+        for logit in reversed(top_logits):
 
-            test_ids = input_ids + [int(candidate)]
+            test_ids = result + [int(logit)]
 
             text = llm.decode(test_ids)
-
-            if is_valid_prefix(text):
-
-                selected_token = int(candidate)
+            print(f"{text}")
+            
+            if is_valid_prefix(text, functions):
+                selected_token = int(logit)
                 break
 
-        # fallback
         if selected_token is None:
             selected_token = int(np.argmax(logits))
 
         input_ids.append(selected_token)
         result.append(selected_token)
 
-        current_text = llm.decode(result)
+        if search_for_fn(llm.decode(result).split()[-1], functions):
+            p_key_ids = list(llm.encode(' "parameters": {"')[0])
+            input_ids += p_key_ids
+            result.extend(p_key_ids)
 
-        # print(current_text)
-
-        if is_json_complete(current_text):
+        if is_json_complete(llm.decode(result)):
             break
 
     return llm.decode(result)
 
-
-# generator = Generator()
-
-# prompt = build_prompt("Replace all vowels in 'Programming is fun' with asterisks")
-
-# output = generate(llm, prompt)
-
-# print(output)
+def search_for_fn(last_item, functions):
+    """
+        this function checks if function name is exitst in result plus ','
+        for adding '"prompt": ' key to result without letting llm pridect it
+    """
+    tmp = last_item.replace('"', "")
+    fn = tmp.replace(",", "")
+    if "," in tmp and fn in functions:
+        return True
+    return False
