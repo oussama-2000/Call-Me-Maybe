@@ -4,7 +4,6 @@ from .gen import build_prompt, generate, build_functions
 from datetime import datetime
 
 
-
 if __name__ == "__main__":
     try:
         parser = Parser()
@@ -12,7 +11,7 @@ if __name__ == "__main__":
         prompts, functions = parser.parsing()
 
         functions_definitions = build_functions(functions)
-        # prompt = "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS"
+        # prompt = "what is the sum of 2 and 40"
         # p = build_prompt(prompt, functions_definitions)
         # generate(p, prompt, functions_definitions)
         start = datetime.now()

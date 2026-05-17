@@ -6,15 +6,18 @@ llm = Small_LLM_Model()
 
 
 def build_functions(input):
-    functions = {fn.name: list(fn.parameters.keys())
+    functions = {
+                    fn.name: list(fn.parameters.keys())
                     for fn in input
                 }
     functions['fn_unknown'] = None
     return functions
 
+
 def build_prompt(user_prompt, functions):
     return f"""
     You convert user requests into function calls.
+
     Format:
     {{
       "prompt": user prompt,
@@ -26,16 +29,14 @@ def build_prompt(user_prompt, functions):
     User prompt: "what is the sum of 2 and 3?"
     JSON:
     {{
-        "prompt" : "what is the sum of 2 and 3?",
+        "prompt": "what is the sum of 2 and 3?",
         "name": "fn_add_numbers",
-        "parameters" :{{"a": 2.0, "b": 3.0}}
+        "parameters": {{"a": 2.0, "b": 3.0}}
     }}
 
     FUNCTIONS:
     {functions}
-    
-    YOU MUST RESPECT PARAMETERS TYPE.
-    
+
     Task:
     User prompt: {user_prompt}
     JSON:
@@ -43,10 +44,9 @@ def build_prompt(user_prompt, functions):
 
 
 def is_valid_prefix(text, functions) -> bool:
-    
+
     if text.count("}") > text.count("{"):
         return False
-    
 
     if '"name":' in text:
 
@@ -78,6 +78,7 @@ def is_valid_prefix(text, functions) -> bool:
 
     return True
 
+
 def is_json_complete(text: str) -> bool:
     try:
         if text.count("{") == text.count("}"):
@@ -88,12 +89,11 @@ def is_json_complete(text: str) -> bool:
 
         # if not isinstance(obj, dict):
         #     return False
-    
+
         return False
 
     except Exception:
         return False
-
 
 
 def generate(prompt, user_prompt, functions):
@@ -111,10 +111,10 @@ def generate(prompt, user_prompt, functions):
     fn_search_done = False
     fn_name = None
 
-
     for _ in range(100):
         if not fn_search_done:
-            exists, name = search_for_fn(llm.decode(result).split()[-1], functions)
+            exists, name = search_for_fn(
+                llm.decode(result).split()[-1], functions)
 
             if exists:
                 p_key_ids = llm.encode('", "parameters": {"')[0].tolist()
@@ -124,9 +124,9 @@ def generate(prompt, user_prompt, functions):
                 result += llm.encode(f'{functions[name][0]}": ')[0].tolist()
                 fn_search_done = True
                 fn_name = name
-            
+
         if fn_search_done:
-            if in_pars(llm.decode(result).split()[-1],fn_name, functions):
+            if in_pars(llm.decode(result).split()[-1], fn_name, functions):
                 token_ids = llm.encode('": ')[0].tolist()
                 input_ids += token_ids
                 result.extend(token_ids)
@@ -144,8 +144,8 @@ def generate(prompt, user_prompt, functions):
             test_ids = result + [int(logit)]
 
             text = llm.decode(test_ids)
-            print(f"{text}")
-            
+            # print(f"{text}")
+
             if is_valid_prefix(text, functions):
                 selected_token = int(logit)
                 break
@@ -162,16 +162,17 @@ def generate(prompt, user_prompt, functions):
 
     return llm.decode(result)
 
+
 def search_for_fn(last_item, functions):
     """
         this function checks if function name is exitst in result plus ','
         for adding '"prompt": ' key to result without letting llm pridect it
     """
     fn = last_item.replace('"', "")
-    # fn = tmp.replace(",", "")
-    if  fn.strip() in functions:
+    if fn.strip() in functions:
         return True, fn
     return False, None
+
 
 def in_pars(last_item, fn_name, functions):
     """
