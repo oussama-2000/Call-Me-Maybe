@@ -15,7 +15,7 @@ class Prompt(BaseModel):
 
 
 class Function_definition(BaseModel):
-    name: str = Field(min_length=8)
+    name: str = Field()
     description: str = Field(min_length=6)
     parameters: Dict[str, Dict] = Field(min_length=1)
     returns: Dict[str, str]

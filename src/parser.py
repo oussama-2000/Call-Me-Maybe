@@ -10,9 +10,12 @@ class Parser():
         try:
 
             with open(path, "r") as file:
+                # content = file.read().strip()
+                # if not content:
+                #     raise ValueError("Empty file")
                 return json.load(file)
 
-        except JSONDecodeError as e:
+        except json.JSONDecodeError as e:
             file_name = path.split("/")[-1]
             raise ValueError(f"invalid json file '{file_name}'"
                              f": {e} ")

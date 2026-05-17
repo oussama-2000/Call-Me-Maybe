@@ -15,16 +15,22 @@ def build_functions(input):
 def build_prompt(user_prompt, functions):
     return f"""
     You convert user requests into function calls.
-    
-    RETURN ONLY VALID MINIFIED JSON.
-    
     Format:
     {{
-      "prompt": user prompt
-      "name": string enum{list(functions.keys())},
+      "prompt": user prompt,
+      "name": string,
       "parameters": object
     }}
-    
+
+    EXAMPLE:
+    User prompt: "what is the sum of 2 and 3?"
+    JSON:
+    {{
+        "prompt" : "what is the sum of 2 and 3?",
+        "name": "fn_add_numbers",
+        "parameters" :{{"a": 2.0, "b": 3.0}}
+    }}
+
     FUNCTIONS:
     {functions}
     
@@ -36,7 +42,7 @@ def build_prompt(user_prompt, functions):
     """
 
 
-def is_valid_prefix(text: str, functions) -> bool:
+def is_valid_prefix(text, functions) -> bool:
     
     if text.count("}") > text.count("{"):
         return False
@@ -74,15 +80,16 @@ def is_valid_prefix(text: str, functions) -> bool:
 
 def is_json_complete(text: str) -> bool:
     try:
+        if text.count("{") == text.count("}"):
+            return True
+        # text = text.replace("\\d", "\\\\d")
+        # text = text.replace("\\s", "\\\\s")
+        # obj = jsofunctionsn.loads(text)
 
-        text = text.replace("\\d", "\\\\d")
-        text = text.replace("\\s", "\\\\s")
-        obj = json.loads(text)
-
-        if not isinstance(obj, dict):
-            return False
+        # if not isinstance(obj, dict):
+        #     return False
     
-        return True
+        return False
 
     except Exception:
         return False
@@ -91,23 +98,44 @@ def is_json_complete(text: str) -> bool:
 
 def generate(prompt, user_prompt, functions):
 
-    input_ids = list(llm.encode(prompt)[0])
+    input_ids = llm.encode(prompt)[0].tolist()
     result = []
     prefix = json.dumps({
         "prompt": user_prompt,
         "name": ""
-    })[:-3]
-    prefix_ids = list(llm.encode(prefix)[0])
+    })[:-2]
+
+    prefix_ids = llm.encode(prefix)[0].tolist()
     input_ids += prefix_ids
     result = prefix_ids.copy()
+    fn_search_done = False
+    fn_name = None
+
 
     for _ in range(100):
+        if not fn_search_done:
+            exists, name = search_for_fn(llm.decode(result).split()[-1], functions)
+
+            if exists:
+                p_key_ids = llm.encode('", "parameters": {"')[0].tolist()
+                input_ids += p_key_ids
+                result.extend(p_key_ids)
+                input_ids += llm.encode(f'{functions[name][0]}": ')[0].tolist()
+                result += llm.encode(f'{functions[name][0]}": ')[0].tolist()
+                fn_search_done = True
+                fn_name = name
+            
+        if fn_search_done:
+            if in_pars(llm.decode(result).split()[-1],fn_name, functions):
+                token_ids = llm.encode('": ')[0].tolist()
+                input_ids += token_ids
+                result.extend(token_ids)
 
         logits = llm.get_logits_from_input_ids(input_ids)
 
         logits = np.array(logits)
 
-        top_logits = np.argsort(logits)[-5:]
+        top_logits = np.argsort(logits)[-3:]
 
         selected_token = None
 
@@ -123,15 +151,11 @@ def generate(prompt, user_prompt, functions):
                 break
 
         if selected_token is None:
+            print("nooop")
             selected_token = int(np.argmax(logits))
 
         input_ids.append(selected_token)
         result.append(selected_token)
-
-        if search_for_fn(llm.decode(result).split()[-1], functions):
-            p_key_ids = list(llm.encode(' "parameters": {"')[0])
-            input_ids += p_key_ids
-            result.extend(p_key_ids)
 
         if is_json_complete(llm.decode(result)):
             break
@@ -143,8 +167,17 @@ def search_for_fn(last_item, functions):
         this function checks if function name is exitst in result plus ','
         for adding '"prompt": ' key to result without letting llm pridect it
     """
-    tmp = last_item.replace('"', "")
-    fn = tmp.replace(",", "")
-    if "," in tmp and fn in functions:
+    fn = last_item.replace('"', "")
+    # fn = tmp.replace(",", "")
+    if  fn.strip() in functions:
+        return True, fn
+    return False, None
+
+def in_pars(last_item, fn_name, functions):
+    """
+        this function checks if we currently in a function parametters
+    """
+    par = last_item.replace('"', "")
+    if par.strip() in functions[fn_name]:
         return True
     return False
