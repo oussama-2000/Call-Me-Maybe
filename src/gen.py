@@ -6,8 +6,16 @@ llm = Small_LLM_Model()
 
 
 def build_functions(input):
+    for fn in input:
+        for par in fn.parameters:
+            if fn.parameters[par]["type"] == "number":
+                fn.parameters[par]["type"] = "float"
+
     functions = {
-                    fn.name: list(fn.parameters.keys())
+                    fn.name: {
+                            par: fn.parameters[par]["type"]
+                            for par in fn.parameters
+                        }
                     for fn in input
                 }
     functions['fn_unknown'] = None
@@ -26,12 +34,12 @@ def build_prompt(user_prompt, functions):
     }}
 
     EXAMPLE:
-    User prompt: "what is the sum of 2 and 3?"
+    User prompt: "What is the square root of 16?"
     JSON:
     {{
-        "prompt": "what is the sum of 2 and 3?",
-        "name": "fn_add_numbers",
-        "parameters": {{"a": 2.0, "b": 3.0}}
+        "prompt": "What is the square root of 16?",
+        "name": "fn_get_square_root",
+        "parameters": {{"a": 16.0}}
     }}
 
     FUNCTIONS:
@@ -80,20 +88,9 @@ def is_valid_prefix(text, functions) -> bool:
 
 
 def is_json_complete(text: str) -> bool:
-    try:
-        if text.count("{") == text.count("}"):
-            return True
-        # text = text.replace("\\d", "\\\\d")
-        # text = text.replace("\\s", "\\\\s")
-        # obj = jsofunctionsn.loads(text)
-
-        # if not isinstance(obj, dict):
-        #     return False
-
-        return False
-
-    except Exception:
-        return False
+    if text.count("{") == text.count("}"):
+        return True
+    return False
 
 
 def generate(prompt, user_prompt, functions):
@@ -111,17 +108,20 @@ def generate(prompt, user_prompt, functions):
     fn_search_done = False
     fn_name = None
 
-    for _ in range(100):
+    while True:
         if not fn_search_done:
             exists, name = search_for_fn(
                 llm.decode(result).split()[-1], functions)
+
+            if name == "fn_unknown":
+                raise ValueError("Invalid prompt")
 
             if exists:
                 p_key_ids = llm.encode('", "parameters": {"')[0].tolist()
                 input_ids += p_key_ids
                 result.extend(p_key_ids)
-                input_ids += llm.encode(f'{functions[name][0]}": ')[0].tolist()
-                result += llm.encode(f'{functions[name][0]}": ')[0].tolist()
+                input_ids += llm.encode(f'{list(functions[name])[0]}": ')[0].tolist()
+                result += llm.encode(f'{list(functions[name])[0]}": ')[0].tolist()
                 fn_search_done = True
                 fn_name = name
 
@@ -141,18 +141,17 @@ def generate(prompt, user_prompt, functions):
 
         for logit in reversed(top_logits):
 
-            test_ids = result + [int(logit)]
+            test_ids = result + [logit]
 
             text = llm.decode(test_ids)
-            # print(f"{text}")
+            print(f"{text}")
 
             if is_valid_prefix(text, functions):
-                selected_token = int(logit)
+                selected_token = logit
                 break
 
         if selected_token is None:
-            print("nooop")
-            selected_token = int(np.argmax(logits))
+            selected_token = np.argmax(logits)
 
         input_ids.append(selected_token)
         result.append(selected_token)
@@ -165,7 +164,7 @@ def generate(prompt, user_prompt, functions):
 
 def search_for_fn(last_item, functions):
     """
-        this function checks if function name is exitst in result plus ','
+        this function checks if function name is exitst in result
         for adding '"prompt": ' key to result without letting llm pridect it
     """
     fn = last_item.replace('"', "")

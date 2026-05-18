@@ -11,14 +11,14 @@ if __name__ == "__main__":
         prompts, functions = parser.parsing()
 
         functions_definitions = build_functions(functions)
-        # prompt = "what is the sum of 2 and 40"
-        # p = build_prompt(prompt, functions_definitions)
-        # generate(p, prompt, functions_definitions)
+        prompt = "who are you"
+        p = build_prompt(prompt, functions_definitions)
         start = datetime.now()
-        for prompt in prompts:
-            p = build_prompt(prompt.prompt, functions_definitions)
-            print(generate(p, prompt.prompt, functions_definitions))
+        generate(p, prompt, functions_definitions)
         end = datetime.now()
+        # for prompt in prompts:
+        #     p = build_prompt(prompt.prompt, functions_definitions)
+        #     print(generate(p, prompt.prompt, functions_definitions))
 
         print(f"time: {end - start}")
     except ValidationError as e:
