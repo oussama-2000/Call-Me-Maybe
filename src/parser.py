@@ -1,40 +1,19 @@
 import json
 from json import JSONDecodeError
 from .models import Prompt, Function_definition
-from typing import List
+from typing import List, Tuple
 
 
 class Parser():
-
-    def load_json_file(self, path: str) -> List:
-        try:
-
-            with open(path, "r") as file:
-                # content = file.read().strip()
-                # if not content:
-                #     raise ValueError("Empty file")
-                return json.load(file)
-
-        except json.JSONDecodeError as e:
-            file_name = path.split("/")[-1]
-            raise ValueError(f"invalid json file '{file_name}'"
-                             f": {e} ")
-
-    def parsing_functions_definition(self,
-                                  json: str) -> List[Function_definition]:
-
-        return [Function_definition(**i) for i in json]
-
-    def parsing_prompts(self, prompts: str) -> List[Prompt]:
-
-        return [Prompt(**i) for i in prompts]
-
-    def parsing(self):
-
-        loading_prompts = \
-            self.load_json_file("./data/input/function_calling_tests.json")
-        loading_functions = \
-            self.load_json_file("./data/input/functions_definition.json")
+    """
+        this class contains the parsing functionalities
+    """
+    def parsing(self, fns: str, input: str) -> Tuple:
+        """
+            main input parsing function
+        """
+        loading_prompts = self.load_json_file(input)
+        loading_functions = self.load_json_file(fns)
 
         if not isinstance(loading_prompts, list):
             raise ValueError("invalid prompts !")
@@ -49,3 +28,35 @@ class Parser():
         prompts = self.parsing_prompts(loading_prompts)
 
         return (prompts, functions)
+
+    def load_json_file(self, path: str) -> List | None:
+        """
+            helper json file load funciton
+        """
+        try:
+
+            with open(path, "r") as file:
+                # content = file.read().strip()
+                # if not content:
+                #     raise ValueError("Empty file")
+                return json.load(file)
+
+        except JSONDecodeError as e:
+            file_name = path.split("/")[-1]
+            raise ValueError(f"invalid json file '{file_name}'"
+                             f": {e} ")
+
+    def parsing_functions_definition(self,
+                                     json: List) -> List[Function_definition]:
+        """
+            this function calls pydantic parsing models
+            to pars function definition file content
+        """
+        return [Function_definition(**i) for i in json]
+
+    def parsing_prompts(self, prompts: List) -> List[Prompt]:
+        """
+            this function calls pydantic parsing models
+            to pars prompt file content
+        """
+        return [Prompt(**i) for i in prompts]

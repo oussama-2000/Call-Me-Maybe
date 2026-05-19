@@ -1,4 +1,3 @@
-"""pydantic models"""
 from pydantic import BaseModel, Field, model_validator
 from typing import Dict
 
@@ -33,7 +32,8 @@ class Function_definition(BaseModel):
         for i in self.parameters.values():
             if len(tuple(i.items())) != 1 or \
                     tuple(i.items())[0][0] != "type":
-                raise ValueError("the only acceptable parametter key is 'type'")
+                raise ValueError("the only acceptable"
+                                 " parametter key is 'type'")
 
         if len(tuple(self.returns.items())) != 1 or \
                 tuple(self.returns.items())[0][0] != "type":

@@ -1,26 +1,53 @@
 from .parser import Parser
+from .generator import Generator
 from pydantic import ValidationError
-from .gen import build_prompt, generate, build_functions
 from datetime import datetime
-
+from argparse import ArgumentParser
+import os
+import json
 
 if __name__ == "__main__":
     try:
+        args_parser = ArgumentParser()
+
+        args_parser.add_argument(
+            "--functions_definition",
+            default="./data/input/functions_definition.json"
+            )
+        args_parser.add_argument(
+            "--input",
+            default="./data/input/function_calling_tests.json"
+            )
+        args_parser.add_argument(
+            "--output",
+            default="./data/output/function_calls.json"
+            )
+
+        args = args_parser.parse_args()
+
         parser = Parser()
+        prompts, functions = parser.parsing(
+            args.functions_definition,
+            args.input
+            )
+        os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
-        prompts, functions = parser.parsing()
-
-        functions_definitions = build_functions(functions)
-        prompt = "who are you"
-        p = build_prompt(prompt, functions_definitions)
+        generator = Generator(functions)
+        output = []
         start = datetime.now()
-        generate(p, prompt, functions_definitions)
+
+        for prompt in prompts:
+            p = generator.build_prompt(prompt.prompt)
+            result = generator.generate(p, prompt.prompt)
+            output.append(result)
+            print(result)
         end = datetime.now()
-        # for prompt in prompts:
-        #     p = build_prompt(prompt.prompt, functions_definitions)
-        #     print(generate(p, prompt.prompt, functions_definitions))
 
         print(f"time: {end - start}")
+
+        with open(args.output, "w") as f:
+            f.write(output)
+
     except ValidationError as e:
         print(f"Parsing Error: {e.errors()[0]['msg']}")
     except Exception as e:
