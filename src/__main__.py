@@ -39,14 +39,14 @@ if __name__ == "__main__":
         for prompt in prompts:
             p = generator.build_prompt(prompt.prompt)
             result = generator.generate(p, prompt.prompt)
-            output.append(result)
-            print(result)
+            output.append(json.loads(result))
+            # print(result)
         end = datetime.now()
 
         print(f"time: {end - start}")
 
         with open(args.output, "w") as f:
-            f.write(output)
+            json.dump(output, f, indent=4)
 
     except ValidationError as e:
         print(f"Parsing Error: {e.errors()[0]['msg']}")

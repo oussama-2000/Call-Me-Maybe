@@ -180,6 +180,11 @@ class Generator:
             input_ids.append(selected_token)
             result.append(selected_token)
 
+            if self.llm.decode(selected_token).strip().endswith("\\"):
+                escape_ids = list(self.llm.encode("\\")[0])
+                input_ids += escape_ids
+                result.extend(escape_ids)
+
             if self.is_json_complete(self.llm.decode(result)):
                 break
 
