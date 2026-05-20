@@ -36,6 +36,7 @@ class Parser():
         try:
 
             with open(path, "r") as file:
+                # file_name = path.split("/")[-1]
                 # content = file.read().strip()
                 # if not content:
                 #     raise ValueError("Empty file")

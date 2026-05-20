@@ -1,4 +1,5 @@
 import json
-
-with open("sss.json", "w") as file:
-    file.write(f"""{[{"name": {"hh": 3}}]}""")
+j = """{
+    "prompt": "Replace all numbers in Hello 34 I'm 233 years old with NUMBERS",
+    "name": "fn_substitute_string_with_regex", "parameters": {"source_string":  "Hello 34 I'm 233 years old", "regex":  "(\\\d+)", "replacement":  "NUMBERS"}
+}"""

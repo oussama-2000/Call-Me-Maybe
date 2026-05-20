@@ -41,9 +41,9 @@ class Generator:
 
         Format:
         {{
-        "prompt": user prompt,
-        "name": string,
-        "parameters": object
+            "prompt": user prompt,
+            "name": string,
+            "parameters": object
         }}
 
         EXAMPLE:
@@ -131,6 +131,7 @@ class Generator:
         fn_name = None
 
         while True:
+
             if not fn_search_done:
                 exists, name = self.search_for_fn(
                     self.llm.decode(result).split()[-1])
@@ -180,10 +181,13 @@ class Generator:
             input_ids.append(selected_token)
             result.append(selected_token)
 
-            if self.llm.decode(selected_token).strip().endswith("\\"):
-                escape_ids = list(self.llm.encode("\\")[0])
-                input_ids += escape_ids
-                result.extend(escape_ids)
+            selected_string = self.llm.decode(selected_token)
+
+            if selected_string.strip().endswith("\\"):
+                if not selected_string.strip()[-2] == "\\":
+                    escape_ids = list(self.llm.encode("\\")[0])
+                    input_ids += escape_ids
+                    result.extend(escape_ids)
 
             if self.is_json_complete(self.llm.decode(result)):
                 break

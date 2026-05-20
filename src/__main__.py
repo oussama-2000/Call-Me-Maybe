@@ -1,5 +1,5 @@
 from .parser import Parser
-from .generator import Generator
+# from .generator import Generator
 from pydantic import ValidationError
 from datetime import datetime
 from argparse import ArgumentParser
@@ -30,23 +30,24 @@ if __name__ == "__main__":
             args.functions_definition,
             args.input
             )
-        os.makedirs(os.path.dirname(args.output), exist_ok=True)
+        print(functions)
+        # os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
-        generator = Generator(functions)
-        output = []
-        start = datetime.now()
+        # generator = Generator(functions)
+        # output = []
+        # start = datetime.now()
 
-        for prompt in prompts:
-            p = generator.build_prompt(prompt.prompt)
-            result = generator.generate(p, prompt.prompt)
-            output.append(json.loads(result))
-            # print(result)
-        end = datetime.now()
+        # for prompt in prompts:
+        #     p = generator.build_prompt(prompt.prompt)
+        #     result = generator.generate(p, prompt.prompt)
+        #     print(result)
+        #     output.append(json.loads(result))
+        # end = datetime.now()
 
-        print(f"time: {end - start}")
+        # print(f"time: {end.minute - start.minute} minutes")
 
-        with open(args.output, "w") as f:
-            json.dump(output, f, indent=4)
+        # with open(args.output, "w") as f:
+        #     json.dump(output, f, indent=4)
 
     except ValidationError as e:
         print(f"Parsing Error: {e.errors()[0]['msg']}")

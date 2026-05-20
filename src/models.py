@@ -24,6 +24,8 @@ class Function_definition(BaseModel):
         self.name = self.name.strip()
         self.description = self.description.strip()
 
+        allowed_type = ["number", "string", "integer", "boolean"]
+
         if not self.name:
             raise ValueError("empty function name")
         if not self.description:
@@ -34,8 +36,15 @@ class Function_definition(BaseModel):
                     tuple(i.items())[0][0] != "type":
                 raise ValueError("the only acceptable"
                                  " parametter key is 'type'")
+            if tuple(i.items())[0][1] not in allowed_type:
+                raise ValueError("unsupported parameter type:"
+                                 f" {tuple(i.items())[0][1]}")
 
         if len(tuple(self.returns.items())) != 1 or \
                 tuple(self.returns.items())[0][0] != "type":
             raise ValueError("the only acceptable returns key is 'type'")
+
+        if tuple(self.returns.items())[0][1] not in allowed_type:
+            raise ValueError("unsupported return type:"
+                             f" {tuple(self.returns.items())[0][1]}")
         return self
