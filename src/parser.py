@@ -1,7 +1,11 @@
-import json
-from json import JSONDecodeError
-from .models import Prompt, Function_definition
-from typing import List, Tuple
+try:
+    import json
+    from json import JSONDecodeError
+    from .models import Prompt, Function_definition
+    from typing import List, Tuple, Any
+except ImportError as e:
+    print(f"Import Error: {e}")
+    exit()
 
 
 class Parser():
@@ -29,7 +33,7 @@ class Parser():
 
         return (prompts, functions)
 
-    def load_json_file(self, path: str) -> List | None:
+    def load_json_file(self, path: str) -> Any | None:
         """
             helper json file load funciton
         """

@@ -1,7 +1,11 @@
-import json
-import numpy as np
-from llm_sdk.llm_sdk import Small_LLM_Model
-from typing import List, Dict, Tuple
+try:
+    import json
+    import numpy as np
+    from llm_sdk import Small_LLM_Model
+    from typing import List, Dict, Tuple, Any
+except ImportError as e:
+    print(f"Import Error: {e}")
+    exit()
 
 
 class Generator:
@@ -13,7 +17,7 @@ class Generator:
         self.llm = Small_LLM_Model()
         self.functions = self.build_functions(functions)
 
-    def build_functions(self, input: List) -> Dict:
+    def build_functions(self, input: List) -> Dict[str, Dict]:
         for fn in input:
             for par in fn.parameters:
                 if fn.parameters[par]["type"] == "number":
@@ -26,7 +30,7 @@ class Generator:
                             }
                         for fn in input
                     }
-        functions['fn_unknown'] = None
+        functions['fn_unknown'] = {}
 
         return functions
 
@@ -112,7 +116,7 @@ class Generator:
             return True
         return False
 
-    def generate(self, prompt: str, user_prompt: str) -> str:
+    def generate(self, prompt: str, user_prompt: str) -> Any:
         """
             this function is the generation engine
         """
@@ -128,7 +132,7 @@ class Generator:
         input_ids += prefix_ids
         result = prefix_ids.copy()
         fn_search_done = False
-        fn_name = None
+        fn_name: str
 
         while True:
 
@@ -158,9 +162,9 @@ class Generator:
 
             logits = self.llm.get_logits_from_input_ids(input_ids)
 
-            logits = np.array(logits)
+            n_logits = np.array(logits)
 
-            top_logits = np.argsort(logits)[-3:]
+            top_logits = np.argsort(n_logits)[-3:]
 
             selected_token = None
 

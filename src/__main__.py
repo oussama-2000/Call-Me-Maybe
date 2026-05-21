@@ -1,10 +1,14 @@
-from .parser import Parser
-# from .generator import Generator
-from pydantic import ValidationError
-from datetime import datetime
-from argparse import ArgumentParser
-import os
-import json
+try:
+    from .parser import Parser
+    from .generator import Generator
+    from pydantic import ValidationError
+    from datetime import datetime
+    from argparse import ArgumentParser
+    import os
+    import json
+except ImportError as e:
+    print(f"Import Error: {e}")
+    exit()
 
 if __name__ == "__main__":
     try:
@@ -30,26 +34,27 @@ if __name__ == "__main__":
             args.functions_definition,
             args.input
             )
-        print(functions)
-        # os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
-        # generator = Generator(functions)
-        # output = []
-        # start = datetime.now()
+        os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
-        # for prompt in prompts:
-        #     p = generator.build_prompt(prompt.prompt)
-        #     result = generator.generate(p, prompt.prompt)
-        #     print(result)
-        #     output.append(json.loads(result))
-        # end = datetime.now()
+        generator = Generator(functions)
+        output = []
+        start = datetime.now()
 
-        # print(f"time: {end.minute - start.minute} minutes")
+        for prompt in prompts:
+            p = generator.build_prompt(prompt.prompt)
+            result = generator.generate(p, prompt.prompt)
+            output.append(json.loads(result))
+        end = datetime.now()
 
-        # with open(args.output, "w") as f:
-        #     json.dump(output, f, indent=4)
+        print(f"time: {end.minute - start.minute} minutes")
+
+        with open(args.output, "w") as f:
+            json.dump(output, f, indent=4)
 
     except ValidationError as e:
         print(f"Parsing Error: {e.errors()[0]['msg']}")
     except Exception as e:
         print(f"Error: {e}")
+    except KeyboardInterrupt:
+        print("Exiting the program")

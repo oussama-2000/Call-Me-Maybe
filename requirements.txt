@@ -1,6 +1,5 @@
 flake8>=7.3.0
 mypy>=1.20.1
-np>=1.0.2
 numpy>=2.2.6
 pydantic>=2.13.2
 torch>=2.11.0
