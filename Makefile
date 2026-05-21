@@ -1,6 +1,6 @@
 
 install:
-	uv add -r requirements.txt
+	@uv sync
 
 run:
 	@uv run python -m src
@@ -13,7 +13,7 @@ debug:
 
 clean:
 	@find -name "__pycache__" -exec rm -rf {} +
-	rm -rf .mypy_cache
+	@rm -rf .mypy_cache
 
 lint:
 	flake8 .
@@ -24,6 +24,5 @@ lint:
 	--disallow-untyped-defs \
 	--check-untyped-defs
 
-activate_uv:
-	source $HOME/.local/bin/env
+
 

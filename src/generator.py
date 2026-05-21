@@ -78,11 +78,10 @@ class Generator:
 
         if '"name":' in text:
 
-            name_parts = text.split('"name"')[1]
-            fn_part = name_parts.split(":")[1]
+            fn_part = text.split('"name":')[1]
             if fn_part.count('"') < 2:
                 fn_part = fn_part.replace('"', "")
-                fn_part = fn_part.replace(',', "")
+                # fn_part = fn_part.replace(',', "")
                 fn_part = fn_part.strip()
                 fn_validation = any(
                     fn.startswith(fn_part)
@@ -138,10 +137,11 @@ class Generator:
 
             if not fn_search_done:
                 exists, name = self.search_for_fn(
-                    self.llm.decode(result).split()[-1])
+                    self.llm.decode(result).split()[-1]
+                    )
 
                 if name == "fn_unknown":
-                    raise ValueError("Invalid prompt")
+                    raise ValueError("Invalid given prompt")
 
                 if exists:
                     p_key_ids = list(self.llm.encode('", "parameters": {"')[0])
