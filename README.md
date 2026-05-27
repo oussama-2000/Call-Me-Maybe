@@ -65,20 +65,20 @@
     <h2>Classic References</h2>
     <ul>
         <li>Article</li>
-        <a src="https://jdmeier.com/how-llms-work/">How LLMs Work</a>
+        <a href="https://jdmeier.com/how-llms-work/">How LLMs Work</a>
         <li>Youtube</li>
         <ul>
-            <a src="https://www.youtube.com/watch?v=AMdG7IjgSPM&t=1173s">
+            <a href="https://www.youtube.com/watch?v=AMdG7IjgSPM&t=1173s">
 Python Tutorial: UV - A Faster, All-in-One Package Manager to Replace Pip and Venv</a>
         <br/>
-            <a src="https://www.youtube.com/watch?v=NKnZYvZA7w4">How LLMs Actually Generate Text</a>
+            <a href="https://www.youtube.com/watch?v=NKnZYvZA7w4">How LLMs Actually Generate Text</a>
         <br/>
-            <a src="https://www.youtube.com/shorts/KHEtJUlpqcg">LLMs are next-word predictors</a>
+            <a href="https://www.youtube.com/shorts/KHEtJUlpqcg">LLMs are next-word predictors</a>
         <br/>
-            <a src="https://youtu.be/ZXiruGOCn9s?si=9nLs4wAPtLDusXF1">
+            <a href="https://youtu.be/ZXiruGOCn9s?si=9nLs4wAPtLDusXF1">
 What are Transformers (Machine Learning Model)?</a>
             <br/>
-            <a src="https://youtu.be/r1bquDz5GGA?si=rvwFW9dY5vU1AlE9">
+            <a href="https://youtu.be/r1bquDz5GGA?si=rvwFW9dY5vU1AlE9">
             PyTorch in 1 Hour</a>
         </ul>
         <li>AI</li>
