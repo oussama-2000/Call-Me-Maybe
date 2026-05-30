@@ -1,17 +1,18 @@
 <i>This project has been created as part of the 42 curriculum by oamkhou .</i>
 <h1>Description</h1>
 <ul>
-    Call-Me-Maybe is a lightweight local LLM inference engine designed to convert natural language prompts into structured function calls using constrained decoding.
-
-    The project uses Hugging Face models and implements a custom state-machine decoder to guarantee valid JSON generation while minimizing hallucinations and formatting errors.
-
+    Call-Me-Maybe is a lightweight local LLM inference engine designed to convert natural language prompts into structured function calls using constrained decoding.<br/><br/>
+    The project uses Hugging Face models and implements a custom state-machine decoder to guarantee valid JSON generation while minimizing hallucinations and formatting errors.<br/><br/>
     Instead of allowing the language model to freely generate output, deterministic JSON syntax is injected manually while the model is constrained to generate only semantic values such as:
-
-    - function names
-    - numbers
-    - strings
-    - regex expressions
-
+	<br/>
+	<br/>
+	<ul>
+		<li>function names</li>
+		<li>numbers</li>
+    	<li>strings</li>
+    	<li>regex expressions</li>		
+	</ul>
+	<br/>
     The goal of the project is to explore how modern LLM inference systems work internally and how constrained decoding can improve reliability, speed, and structured generation.
 </ul>
 
@@ -90,9 +91,15 @@ What are Transformers (Machine Learning Model)?</a>
 
 <h1>Algorithm explanation</h1>
 <ul>
-    To improve generation reliability, I implemented a Top-K candidate selection strategy combined with constrained decoding. Instead of considering the entire vocabulary at each generation 		step, the model only evaluates the top-K tokens with the highest logits (prediction scores). This significantly reduces the search space while preserving the most likely candidates.<br/>
-	For each candidate token, I use validation functions such as is_valid_prefix() and is_json_complete() to ensure that the generated output remains syntactically and semantically correct. 		During generation, the candidate token is temporarily appended to the previously generated tokens, and the resulting text is validated. The is_valid_prefix() function checks that the partial 	output still conforms to the expected structure, including JSON syntax, valid function names, parameter names, and other schema constraints. If a candidate violates any constraint, it is 		rejected and the next best candidate is evaluated.<br/>
-	Once a valid token is found, it is added to the context and generation continues. This process prevents hallucinated function names, malformed JSON, and invalid parameter structures. 			Finally, the is_json_complete() function determines whether a complete and valid JSON object has been generated, allowing the decoding loop to terminate as soon as the desired output is produced.<br/>
+    To improve generation reliability, I implemented a Top-K candidate selection strategy combined with constrained decoding. Instead of considering the entire vocabulary at each generation 		step, the model only evaluates the top-K tokens with the highest logits (prediction scores). This significantly reduces the search space while preserving the most likely candidates.
+	<br/>
+	<br/>
+	For each candidate token, I use validation functions such as is_valid_prefix() and is_json_complete() to ensure that the generated output remains syntactically and semantically correct. 		During generation, the candidate token is temporarily appended to the previously generated tokens, and the resulting text is validated. The is_valid_prefix() function checks that the partial 	output still conforms to the expected structure, including JSON syntax, valid function names, parameter names, and other schema constraints. If a candidate violates any constraint, it is 		rejected and the next best candidate is evaluated.
+	<br/>
+	<br/>
+	Once a valid token is found, it is added to the context and generation continues. This process prevents hallucinated function names, malformed JSON, and invalid parameter structures. 			Finally, the is_json_complete() function determines whether a complete and valid JSON object has been generated, allowing the decoding loop to terminate as soon as the desired output is produced.
+	<br/>
+	<br/>
 	This approach combines the flexibility of language models with deterministic validation rules, resulting in more accurate, reliable, and structured function-calling outputs.
 </ul>
 
@@ -137,6 +144,7 @@ What are Transformers (Machine Learning Model)?</a>
         <li>regex-heavy inputs</li>
         <li>malformed generation attempts</li>
     </ul>
+	<br/>
     Testing included:
     <ul>
         <li>JSON validation</li>
