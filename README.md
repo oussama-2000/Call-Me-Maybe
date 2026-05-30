@@ -1,4 +1,9 @@
 <i>This project has been created as part of the 42 curriculum by oamkhou .</i>
+<br/>
+<br/>
+<div>
+	<img src="llm.jpg" width=100%/>	
+</div>
 <h1>Description</h1>
 <ul>
     Call-Me-Maybe is a lightweight local LLM inference engine designed to convert natural language prompts into structured function calls using constrained decoding.<br/><br/>
