@@ -90,18 +90,15 @@ What are Transformers (Machine Learning Model)?</a>
 
 <h1>Algorithm explanation</h1>
 <ul>
-    i used top k logits candidate methodology to treat just the top logits (the tokens that have bigeast score).
-    then constrained decoding functions (is_valid_prefix(), is_json_complete())
-    to constraine any llm generated token to avoid llm hallucination and wrong output.
-    in everty generated token, i'm checking if the result (previous tokens and current token)
-    still valid using is_valid_prefix(); such as json structur, function name, parameters validation .
-    if the the current token verified as a valid i choose it and add it to the context, otherwise i will choose other candidate. 
-    the function  is_json_complete() comes to verify if the generated json completed or not yet to break generation .
+    To improve generation reliability, I implemented a Top-K candidate selection strategy combined with constrained decoding. Instead of considering the entire vocabulary at each generation 		step, the model only evaluates the top-K tokens with the highest logits (prediction scores). This significantly reduces the search space while preserving the most likely candidates.<br/>
+	For each candidate token, I use validation functions such as is_valid_prefix() and is_json_complete() to ensure that the generated output remains syntactically and semantically correct. 		During generation, the candidate token is temporarily appended to the previously generated tokens, and the resulting text is validated. The is_valid_prefix() function checks that the partial 	output still conforms to the expected structure, including JSON syntax, valid function names, parameter names, and other schema constraints. If a candidate violates any constraint, it is 		rejected and the next best candidate is evaluated.<br/>
+	Once a valid token is found, it is added to the context and generation continues. This process prevents hallucinated function names, malformed JSON, and invalid parameter structures. 			Finally, the is_json_complete() function determines whether a complete and valid JSON object has been generated, allowing the decoding loop to terminate as soon as the desired output is produced.<br/>
+	This approach combines the flexibility of language models with deterministic validation rules, resulting in more accurate, reliable, and structured function-calling outputs.
 </ul>
 
 <h1>Design decisions</h1>
 <ul>
-    i shoose that methodology because between many methods it comes with lateast time complexity, and maybe it more simple.
+    i shose that methodology between many methods because  it comes with lateast time complexity, and maybe it more simple.
 </ul>
 <h1>Performance analysis</h1>
 <ul>
