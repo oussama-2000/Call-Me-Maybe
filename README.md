@@ -158,6 +158,12 @@ What are Transformers (Machine Learning Model)?</a>
         <li>output determinism</li>
     </ul>
 </ul>
+<h1>Treasure</h1>
+<a href="https://www.tldraw.com/f/Ciam9oAzRlG3gVUnN4EN3?d=v-3789.-382.13621.6839.page">
+	<img width="1019" height="840" alt="Screenshot From 2026-05-31 00-49-37" src="https://github.com/user-attachments/assets/9a46f89a-4084-4c72-8183-270f88f27f87" />
+
+<a/>
+
 
 cd ~/goinfre/Call-Me-Maybe
 export XDG_CACHE_HOME=$PWD/.cache
